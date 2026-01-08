@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Priyanshu Vastralaya and Dresses</title>
+
+<style>
+body { font-family: Arial; background:#f2f2f2; margin:0; }
+header { background:#000; color:#fff; padding:15px; text-align:center; }
+header img { height:80px; }
+.container { max-width:900px; margin:auto; background:#fff; padding:20px; }
+h2 { border-bottom:2px solid #ddd; padding-bottom:5px; }
+input, select, button { width:100%; padding:10px; margin:6px 0; }
+button { background:#28a745; color:#fff; border:none; cursor:pointer; }
+.admin { background:#fafafa; padding:15px; margin-top:20px; border:1px solid #ccc; }
+.hidden { display:none; }
+.receipt { background:#eee; padding:15px; margin-top:15px; }
+.stock { color:green; font-weight:bold; }
+</style>
+</head>
+
+<body>
+
+<header>
+<img src="logo.png">
+<h1>Priyanshu Vastralaya and Dresses</h1>
+<p>✔ School Dresses | ✔ 2-Day Delivery</p>
+</header>
+
+<div class="container">
+
+<h2>🛒 Buy School Dress</h2>
+
+<input id="custName" placeholder="Customer Name">
+<input id="custPhone" placeholder="WhatsApp Number">
+
+<select id="dress">
+  <option value="Small">School Uniform - Small</option>
+  <option value="Medium">School Uniform - Medium</option>
+  <option value="Large">School Uniform - Large</option>
+</select>
+
+<input id="price" placeholder="Price (₹)">
+<p class="stock" id="stockInfo"></p>
+
+<button onclick="payNow()">Pay via UPI</button>
+
+<div id="receipt" class="receipt hidden"></div>
+
+<hr>
+
+<h2>🔐 Owner Login</h2>
+<input id="adminUser" placeholder="Username">
+<input id="adminPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<div id="adminPanel" class="admin hidden">
+<h3>📦 Inventory Management</h3>
+
+<label>Small Stock</label>
+<input id="smallStock" type="number">
+
+<label>Medium Stock</label>
+<input id="mediumStock" type="number">
+
+<label>Large Stock</label>
+<input id="largeStock" type="number">
+
+<button onclick="saveStock()">Save Inventory</button>
+</div>
+
+</div>
+
+<script>
+// DEFAULT INVENTORY
+let stock = JSON.parse(localStorage.getItem("stock")) || {
+  Small:10, Medium:10, Large:10
+};
+
+function updateStockView(){
+  let dress = document.getElementById("dress").value;
+  document.getElementById("stockInfo").innerText =
+  "Available Stock: " + stock[dress];
+}
+updateStockView();
+document.getElementById("dress").onchange = updateStockView;
+
+function payNow(){
+  let name = custName.value;
+  let phone = custPhone.value;
+  let dress = document.getElementById("dress").value;
+  let price = price.value;
+
+  if(!name || !phone || !price){
+    alert("Fill all details");
+    return;
+  }
+  if(stock[dress] <= 0){
+    alert("Out of Stock");
+    return;
+  }
+
+  let upi = `upi://pay?pa=7233044057@upi&pn=PriyanshuVastralaya&am=${price}&cu=INR`;
+  window.location.href = upi;
+
+  stock[dress]--;
+  localStorage.setItem("stock", JSON.stringify(stock));
+  updateStockView();
+
+  let msg = `🧾 Payment Receipt
+Shop: Priyanshu Vastralaya and Dresses
+Name: ${name}
+Dress: ${dress}
+Amount: ₹${price}
+Delivery: 2 Days`;
+
+  receipt.classList.remove("hidden");
+  receipt.innerHTML = `<pre>${msg}</pre>
+<button onclick="sendWA('${phone}','${msg}')">Send Receipt on WhatsApp</button>`;
+}
+
+function sendWA(phone, msg){
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
+  window.open(`https://wa.me/917233044057?text=${encodeURIComponent(msg)}`);
+}
+
+// ADMIN LOGIN
+function login(){
+  if(adminUser.value=="admin" && adminPass.value=="admin123"){
+    adminPanel.classList.remove("hidden");
+    smallStock.value = stock.Small;
+    mediumStock.value = stock.Medium;
+    largeStock.value = stock.Large;
+  } else {
+    alert("Wrong Login");
+  }
+}
+
+function saveStock(){
+  stock.Small = parseInt(smallStock.value);
+  stock.Medium = parseInt(mediumStock.value);
+  stock.Large = parseInt(largeStock.value);
+  localStorage.setItem("stock", JSON.stringify(stock));
+  alert("Inventory Updated");
+  updateStockView();
+}
+</script>
+
+</body>
+</html>
